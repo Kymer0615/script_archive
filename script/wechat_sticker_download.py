@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 import requests
 import subprocess
+import argparse
 from os import makedirs
 from concurrent.futures import ThreadPoolExecutor
 
@@ -53,6 +54,20 @@ def download_files(urls, directory):
 
 # Main execution
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Download WeChat stickers.')
+    parser.add_argument('-dir', '--directory', type=str, help='Specify the download directory.')
+    args = parser.parse_args()
+
+    download_directory = args.directory if args.directory else None
+
+    # Check if the directory is specified, if not ask for user input
+    if download_directory is None:
+        response = input("No directory specified. Would you like to specify one? (y/n): ").strip().lower()
+        if response == 'y':
+            download_directory = input("Please enter the download directory: ")
+        else:
+            # Set default directory if the user chooses not to specify
+            download_directory = './wechat_stickers/'
 
     # Path to the shell script
     script_path = './script/wechat_sticker_download.sh'
@@ -60,13 +75,12 @@ if __name__ == "__main__":
     # Run the shell script
     result = subprocess.run([script_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-
-
-    makedirs("./wechat_stickers/", exist_ok=True)
+    # Ensure the directory exists
+    makedirs(args.directory, exist_ok=True)
     plist_path = './temp/fav.archive.plist'
     
     # Extract URLs from the plist
     url_list = extract_strings_from_plist(plist_path)
     
     # Download all files concurrently
-    download_files(url_list, "./wechat_stickers/")
+    download_files(url_list, args.directory)
