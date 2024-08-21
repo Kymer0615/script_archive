@@ -4,11 +4,16 @@ import argparse
 import os
 from tqdm import tqdm
 
-def create_gif_from_images(folder_path, output_path, duration_ms):
+def create_gif_from_images(folder_path, output_path, duration_ms, sort_by):
     images = []
     # List all files in the directory and sort them
-    files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith(('.png', '.jpg', '.jpeg'))])
-    
+    if sort_by == "name":
+        files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith(('.png', '.jpg', '.jpeg'))])
+    elif sort_by == "time":
+        files = sorted(
+            [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith(('.png', '.jpg', '.jpeg'))],
+            key=os.path.getmtime
+        )
     for filename in tqdm(files, desc="Processing images"):
         # Read each image with OpenCV
         img = cv2.imread(filename)
@@ -35,6 +40,7 @@ if __name__ == "__main__":
     parser.add_argument('-out', '--output', type=str, help="Filename for the output GIF")
     parser.add_argument('-outdir', '--outputdir', type=str, default='./', help="Output directory to save the GIF")
     parser.add_argument('-int', '--interval', type=int, help="Time interval between images in milliseconds")
+    parser.add_argument('-sort', '--sortby', type=str, choices=['name', 'time'], default='name', help="Sort images by 'name' or 'time'")
     
     args = parser.parse_args()
 
@@ -63,4 +69,7 @@ if __name__ == "__main__":
     else:
         duration_ms = int(input("Please specify the time interval between images in milliseconds: "))
 
-    create_gif_from_images(folder_path, output_path, duration_ms)
+    # Sort argument handling
+    sort_by = args.sortby
+
+    create_gif_from_images(folder_path, output_path, duration_ms, sort_by)
