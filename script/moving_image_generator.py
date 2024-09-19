@@ -8,7 +8,15 @@ def create_media_from_images(folder_path, output_path, duration_ms, sort_by, out
     images = []
     # List all files in the directory and sort them
     if sort_by == "name":
-        files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith(('.png', '.jpg', '.jpeg'))])
+        image_files = [
+            os.path.join(folder_path, file)
+            for file in os.listdir(folder_path)
+            if file.lower().endswith(('.png', '.jpg', '.jpeg'))
+        ]
+        files = sorted(
+            image_files,
+            key=lambda x: int(os.path.splitext(os.path.basename(x))[0])
+        )
     elif sort_by == "time":
         files = sorted(
             [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith(('.png', '.jpg', '.jpeg'))],
